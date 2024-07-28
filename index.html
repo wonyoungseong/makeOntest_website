@@ -34,19 +34,19 @@
             text-align: center;
         }
     </style>
-	<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-NP4HKNQP');</script>
-<!-- End Google Tag Manager -->
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-NP4HKNQP');</script>
+    <!-- End Google Tag Manager -->
 </head>
 <body>
-	<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NP4HKNQP"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NP4HKNQP"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div class="tabs">
         <a href="#video" class="active">Video</a>
         <a href="#service-guide">Service Guide</a>
@@ -54,45 +54,84 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div id="video" class="video-section">
         <div class="video">
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/kqd2HbTJ4Sg" frameborder="0" allowfullscreen></iframe>
+            <iframe id="player1" width="560" height="315" src="https://www.youtube.com/embed/kqd2HbTJ4Sg?enablejsapi=1" frameborder="0" allowfullscreen></iframe>
             <p>A must-watch tutorial for first-time users!<br>
             <strong>A 1-minute user guide</strong><br>
             From powering on the device to powering it off.</p>
         </div>
         <div class="video">
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/yfoY53QXEnI" frameborder="0" allowfullscreen></iframe>
+            <iframe id="player2" width="560" height="315" src="https://www.youtube.com/embed/yfoY53QXEnI?enablejsapi=1" frameborder="0" allowfullscreen></iframe>
             <p>A must-watch tutorial for first-time users!<br>
             <strong>A routine consisting of a 3-second measurement & a 3-minute care</strong><br>
             1 measurement + 1 recommended mode + additional care.</p>
         </div>
         <div class="video">
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/W6NZfCO5SIk" frameborder="0" allowfullscreen></iframe>
+            <iframe id="player3" width="560" height="315" src="https://www.youtube.com/embed/W6NZfCO5SIk?enablejsapi=1" frameborder="0" allowfullscreen></iframe>
             <p>Recommended if you want firmer skin!<br>
             <strong>Intensive firming care</strong></p>
         </div>
     </div>
 
     <script>
+        // Load the IFrame Player API code asynchronously.
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // Create an array to hold the player objects
+        var players = [];
+
+        // This function creates an <iframe> (and YouTube player) after the API code downloads.
+        function onYouTubeIframeAPIReady() {
+            players.push(new YT.Player('player1', {
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            }));
+            players.push(new YT.Player('player2', {
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            }));
+            players.push(new YT.Player('player3', {
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            }));
+        }
+
         // Function to send GTM video event
-        function sendGTMVideoEvent(videoId) {
+        function sendGTMVideoEvent(action, videoId) {
             if (window.dataLayer) {
                 window.dataLayer.push({
                     'event': 'gtm.video',
+                    'videoAction': action,
                     'videoId': videoId
                 });
-                console.log('GTM video event sent for videoId: ' + videoId);
+                console.log('GTM video event sent for videoId: ' + videoId + ', action: ' + action);
             } else {
                 console.log('GTM dataLayer is not available');
             }
         }
 
-        // Attach click event listeners to iframes
-        document.querySelectorAll('iframe').forEach(function(iframe) {
-            iframe.addEventListener('click', function() {
-                const videoId = iframe.src.split('/').pop().split('?')[0];
-                sendGTMVideoEvent(videoId);
-            });
-        });
+        // The API will call this function when the player's state changes.
+        function onPlayerStateChange(event) {
+            var videoId = event.target.getIframe().src.split('/').pop().split('?')[0];
+            switch(event.data) {
+                case YT.PlayerState.PLAYING:
+                    sendGTMVideoEvent('play', videoId);
+                    break;
+                case YT.PlayerState.ENDED:
+                    sendGTMVideoEvent('end', videoId);
+                    break;
+                case YT.PlayerState.PAUSED:
+                    sendGTMVideoEvent('pause', videoId);
+                    break;
+                default:
+                    break;
+            }
+        }
     </script>
 </body>
 </html>
